@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>純おかまバー・そにあ 計算表</title>
+  <style>
+    body {
+      font-family: "Hiragino Maru Gothic ProN", sans-serif;
+      padding: 1em;
+      background-color: #000;
+      color: #e6c565;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1em;
+      font-size: 2em;
+      color: #e6c565;
+      text-shadow: 0 0 1px #fff;
+      border-bottom: 1px solid #fff;
+      padding-bottom: 0.5em;
+    }
+    .top-bar {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+      margin-bottom: 1em;
+    }
+    @media (min-width: 600px) {
+      .top-bar {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+    }
+    #total {
+      font-weight: bold;
+      font-size: 1.4em;
+      text-shadow: 0 0 1px #fff;
+      text-align: center;
+    }
+    button {
+      padding: 0.6em 1em;
+      font-size: 1em;
+      cursor: pointer;
+      background-color: #222;
+      border: 1px solid #e6c565;
+      border-radius: 5px;
+      color: #e6c565;
+      text-shadow: 0 0 1px #fff;
+      width: 100%;
+      margin-top: 0.3em;
+    }
+    @media (min-width: 600px) {
+      button {
+        width: auto;
+        margin-top: 0;
+      }
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1em;
+      background: #111;
+      color: #e6c565;
+    }
+    th, td {
+      padding: 0.5em;
+      border: 1px solid #e6c565;
+      text-align: center;
+      text-shadow: 0 0 1px #fff;
+    }
+    th {
+      background-color: #222;
+    }
+    select {
+      font-size: 1em;
+      background-color: #000;
+      color: #e6c565;
+      border: 1px solid #e6c565;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h1>純おかまバー・そにあ 計算表</h1>
+
+  <div class="top-bar">
+    <div id="total">合計金額：0㌦</div>
+    <div>
+      <button onclick="calculateMax()">全商品最大で計算</button>
+      <button onclick="clearAll()">全クリア</button>
+      <button onclick="copyTotal()">合計をコピー</button>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>商品名</th>
+        <th>単価</th>
+        <th>個数</th>
+        <th>小計</th>
+      </tr>
+    </thead>
+    <tbody id="itemTable">
+      <tr>
+        <td>ソニアの雫</td>
+        <td>10,000</td>
+        <td><select data-price="10000" data-max="20"></select></td>
+        <td class="subtotal">0</td>
+      </tr>
+      <tr>
+        <td>ぼったくりフラッシュ</td>
+        <td>100,000</td>
+        <td><select data-price="100000" data-max="20"></select></td>
+        <td class="subtotal">0</td>
+      </tr>
+      <tr>
+        <td>ソニアの豆(5%)</td>
+        <td>7,500</td>
+        <td><select data-price="7500" data-max="20"></select></td>
+        <td class="subtotal">0</td>
+      </tr>
+      <tr>
+        <td>ソニアの渇きもの(5%)</td>
+        <td>10,000</td>
+        <td><select data-price="10000" data-max="20"></select></td>
+        <td class="subtotal">0</td>
+      </tr>
+      <tr>
+        <td>ぼったくりスペシャル</td>
+        <td>500,000</td>
+        <td><select data-price="500000" data-max="20" data-ignore-max="true"></select></td>
+        <td class="subtotal">0</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script>
+    // プルダウンに0〜最大個数を入れる
+    document.querySelectorAll('select').forEach(select => {
+      const max = parseInt(select.dataset.max);
+      for (let i = 0; i <= max; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = i;
+        select.appendChild(option);
+      }
+
+      select.addEventListener('change', calculateTotal);
+    });
+
+    function calculateTotal() {
+      let total = 0;
+      document.querySelectorAll('#itemTable tr').forEach(row => {
+        const select = row.querySelector('select');
+        const price = parseInt(select.dataset.price);
+        const quantity = parseInt(select.value);
+        const subtotal = price * quantity;
+        row.querySelector('.subtotal').textContent = subtotal.toLocaleString();
+        total += subtotal;
+      });
+      document.getElementById('total').textContent = `合計金額：${total.toLocaleString()}㌦`;
+    }
+
+    function calculateMax() {
+      document.querySelectorAll('select').forEach(select => {
+        if (!select.dataset.ignoreMax) {
+          select.value = select.dataset.max;
+        }
+      });
+      calculateTotal();
+    }
+
+    function clearAll() {
+      document.querySelectorAll('select').forEach(select => {
+        select.value = 0;
+      });
+      calculateTotal();
+    }
+
+    function copyTotal() {
+      const totalText = document.getElementById('total').textContent;
+      const amount = totalText.replace(/[^0-9]/g, '');
+      navigator.clipboard.writeText(amount).then(() => {
+        alert('合計金額をコピーしました');
+      }).catch(() => {
+        alert('コピーに失敗しました');
+      });
+    }
+  </script>
+</body>
+</html>
